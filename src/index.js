@@ -35,13 +35,18 @@ const storage = multer.diskStorage({
     // Gera um nome único para o arquivo
     cb(
       null,
-      path.basename(file.originalname, path.extname(file.originalname)) +
-        "-" +
-        randomUUID() +
-        path.extname(file.originalname)
+      path.basename(file.originalname, path.extname(file.originalname))+path.extname(file.originalname)
     );
   },
 });
+
+/**
+ * path.basename(file.originalname, path.extname(file.originalname)) +
+        "-" +
+        randomUUID() +
+        path.extname(file.originalname)
+ * 
+ */
 const upload = multer({ storage });
 
 const app = express();
@@ -50,14 +55,15 @@ const app = express();
 app.use("/visualizar", express.static(uploadDir));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  expressjwt({
-    secret: process.env.JWT_SECRET,
-    algorithms: ["HS256"],
-  }).unless({ path: ["/login"] })
-);
+// app.use(
+//   expressjwt({
+//     secret: process.env.JWT_SECRET,
+//     algorithms: ["HS256"],
+//   }).unless({ path: ["/login"] })
+// );
 
 app.post("/login", (req, res) => {
+  console.time("login");
   const user = req.body;
   const userMock = {
     id: 1,
@@ -68,56 +74,72 @@ app.post("/login", (req, res) => {
   const payload = { id: userMock.id, userName: userMock.name };
   const jwt = generateToken(payload);
 
+  console.timeEnd("login");
   return res.status(200).json(jwt);
 });
 // Rota para upload de arquivos
-app.post("/", upload.array("document"), (req, res) => {
+app.post("/", upload.array("document", 10), (req, res) => {
+  console.time("/ post");
   const file = req.files;
+
   if (!file) {
+    console.timeEnd("/ post");
     return res.status(500).json({ error: "Não possui arquivo anexado!" });
   }
-  
+
   let filesArr = [];
   for (let index = 0; index < file.length; index++) {
     filesArr.push(file[index].originalname);
   }
-  res.status(200).json({ ok: true, filesArr });
+
+  console.timeEnd("/ post");
+  return res.status(200).json({filesArr});
 });
 
 // Rota para listar arquivos disponíveis
 app.get("/", (req, res) => {
+  console.time("/ get");
   try {
     const file = fs.readdirSync(uploadDir, { recursive: true });
     if (!file) {
+      console.timeEnd("/ get");
       return res.status(404).send("Arquivo não encontrado!");
     }
+    console.timeEnd("/ get");
     return res.status(200).json(file);
   } catch (error) {
+    console.timeEnd("/ get");
     return res.status(500).json({ error: true });
   }
 });
 
 // Rota para download de arquivos
 app.get("/download/:file", (req, res) => {
+  console.time("/download");
   const filePath = path.join(uploadDir, req.params.file);
   const fileName = req.params.file;
 
   try {
     fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK, (error) => {
       if (error) {
+        console.timeEnd("/download");
         return res.status(404).send("Arquivo não encontrado!");
       }
     });
 
+    console.timeEnd("/download");
     res.download(filePath, fileName, (err) => {
       if (err) {
-        console.error("Erro durante o download:", err);
-        res.status(500).send("Erro ao realizar o download do arquivo.");
+        console.timeEnd("/download");
+        res
+          .status(500)
+          .send("Erro ao realizar o download do arquivo.")
+          .json({ error: err.message });
       }
     });
   } catch (error) {
-    console.error(error.message);
-    return res.status(500);
+    console.timeEnd("/download");
+    return res.status(500).json({ error: error.message });
   }
 });
 
