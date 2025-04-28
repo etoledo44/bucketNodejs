@@ -1,7 +1,7 @@
-# NodeBucket
+# gBucket
 
 ## Descrição
-NodeBucket é uma aplicação Node.js que permite o upload, visualização e download de arquivos. Ele utiliza Express para gerenciar as rotas, Multer para lidar com uploads de arquivos e dotenv para gerenciar variáveis de ambiente.
+gBucket é uma aplicação Node.js que permite o upload, visualização e download de arquivos. Ele utiliza Express para gerenciar as rotas, Multer para lidar com uploads de arquivos e dotenv para gerenciar variáveis de ambiente.
 
 ## Instalação
 Para instalar as dependências do projeto, execute:
@@ -40,7 +40,7 @@ npm start
 
 ## Estrutura do Projeto
 ```
-NodeBucket/
+gBucket/
 ├── documents/
 │   └── images/
 ├── src/
