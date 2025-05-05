@@ -1,10 +1,15 @@
 const { Router } = require("express");
 const mainProcess = Router();
-const upload = require("../../config/multer");
-const { uploadFile, getFiles, downloadFile } = require("../../controllers/main/index");
+const upload = require('../../middlewares/upload.middleware')
 
-mainProcess.get("/", getFiles);
+const {
+  uploadFile,
+  getFiles,
+  downloadFile,
+} = require("../../controllers/main");
+
 mainProcess.post("/", upload.array("document", 10), uploadFile);
-mainProcess.get("/download/:file" , downloadFile);
+mainProcess.get("/", getFiles);
+mainProcess.get("/download/:file", downloadFile);
 
 module.exports = mainProcess;

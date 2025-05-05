@@ -1,39 +1,38 @@
+const { checkAcessFiles } = require("../../services/mainProcess");
 const CONSTANTS = require("../../config/constants");
-const { access, constants } = require("fs").promises;
+const fs = require("fs");
 const path = require("path");
-// app.post("/login", (req, res) => {
-//   console.time("login");
-//   const user = req.body;
-//   const userMock = {
-//     id: 1,
-//     name: "eriq",
-//     password: "45646546",
-//   };
-
-//   const payload = { id: userMock.id, userName: userMock.name };
-//   const jwt = generateToken(payload);
-
-//   console.timeEnd("login");
-//   return res.status(200).json(jwt);
-// });
+const { UPLOAD_DIR, TMP_DIR } = require("../../config");
+const { processFile } = require("../../services/file.service");
 
 // Rota para upload de arquivos
 async function uploadFile(req, res) {
   console.time("/ post");
-  const file = req.files;
 
-  if (!file) {
+  console.log("+++ UploadDIr", UPLOAD_DIR);
+  console.log("+++ TMP_DIR", TMP_DIR);
+
+  const { cnpj } = JSON.parse(req.body.data);
+  console.log("cnpj", cnpj);
+
+  const files = req.files;
+
+  if (!files) {
     console.timeEnd("/ post");
     return res.status(500).json({ error: "Não possui arquivo anexado!" });
   }
 
-  let filesArr = [];
-  for (let index = 0; index < file.length; index++) {
-    filesArr.push(file[index].originalname);
+  try {
+    const results = await processFile(cnpj, files);
+    console.timeEnd("/ post");
+    res.json(results);
+  } catch (error) {
+    console.timeEnd("/ post");
+    return res.status(500).json({ error: error.message });
   }
 
-  console.timeEnd("/ post");
-  return res.status(200).json({ filesArr });
+  // console.timeEnd("/ post");
+  // return res.status(200).json({ filesArr });
 }
 
 // Rota para listar arquivos disponíveis
@@ -58,10 +57,10 @@ async function downloadFile(req, res) {
   console.time("/download");
 
   try {
-    const filePath = path.join(CONSTANTS.uploadDir, req.params.file);
     const fileName = req.params.file;
+    const filePath = path.join(CONSTANTS.uploadDir, req.params.file);
 
-    await access(filePath, constants.F_OK | constants.R_OK);
+    await checkAcessFiles(req.params.file);
 
     res.download(filePath, fileName, (err) => {
       if (err) {
