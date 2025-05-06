@@ -1,62 +1,117 @@
-# BucketNodeJS
+# BucketNodeJS - API de Upload de Arquivos
 
-## Descrição
-BucketNodeJS é uma aplicação Node.js que permite o upload, visualização e download de arquivos. Ele utiliza Express para gerenciar as rotas, Multer para lidar com uploads de arquivos e dotenv para gerenciar variáveis de ambiente.
+API REST para gerenciamento de upload e download de arquivos, desenvolvida com Node.js, TypeScript e Express.
 
-## Instalação
-Para instalar as dependências do projeto, execute:
+## 🚀 Tecnologias
+
+- Node.js
+- TypeScript
+- Express
+- Multer (Upload de arquivos)
+- ESLint + Prettier (Padronização de código)
+- JWT (Autenticação)
+
+## 📋 Pré-requisitos
+
+- Node.js (versão 18 ou superior)
+- npm ou yarn
+
+## 🔧 Instalação
+
+1. Clone o repositório:
+```bash
+git clone [URL_DO_REPOSITÓRIO]
+cd BucketNodeJS
+```
+
+2. Instale as dependências:
 ```bash
 npm install
 ```
 
-## Configuração
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-```properties
+3. Configure as variáveis de ambiente:
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+```env
 PORT=5050
+JWT_SECRET=seu_segredo_jwt
 ```
 
-## Executando a Aplicação
-Para iniciar a aplicação em modo de desenvolvimento, execute:
+## 🚀 Executando o projeto
+
+### Desenvolvimento
 ```bash
 npm run dev
 ```
-Para iniciar a aplicação em modo de produção, execute:
+
+### Produção
 ```bash
+npm run build
 npm start
 ```
 
-## Endpoints
-### Upload de Arquivos
-- **POST /**: Faz o upload de arquivos. Os arquivos devem ser enviados no campo `document` do formulário.
+## 📝 Scripts Disponíveis
 
-### Visualizar Arquivos
-- **GET /**: Retorna a lista de arquivos disponíveis para download.
+- `npm run dev`: Inicia o servidor em modo desenvolvimento com hot-reload
+- `npm run build`: Compila o TypeScript para JavaScript
+- `npm run start`: Inicia o servidor em modo produção
+- `npm run lint`: Executa o ESLint para verificar o código
+- `npm run format`: Formata o código usando Prettier
+- `npm run typecheck`: Verifica os tipos TypeScript
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── config/         # Configurações do projeto
+├── controllers/    # Controladores da aplicação
+├── middlewares/    # Middlewares (upload, autenticação)
+├── routes/         # Rotas da API
+├── services/       # Serviços e lógica de negócio
+├── utils/          # Utilitários
+└── index.ts        # Ponto de entrada da aplicação
+```
+
+## 🔒 Rotas da API
+
+### Upload de Arquivos
+- `POST /`: Upload de múltiplos arquivos
+  - Body: FormData com campo 'document' (máximo 10 arquivos)
+  - Body: JSON com campo 'data' contendo CNPJ
+
+### Listagem de Arquivos
+- `GET /`: Lista todos os arquivos disponíveis
 
 ### Download de Arquivos
-- **GET /download/:file**: Faz o download de um arquivo específico. Substitua `:file` pelo nome do arquivo.
+- `GET /download/:file`: Download de um arquivo específico
 
-### Visualizar Arquivos Estáticos
-- **GET /visualizar**: Permite visualizar os arquivos estáticos na pasta de documentos.
+## 🔧 Configuração do Ambiente de Desenvolvimento
 
-## Estrutura do Projeto
-```
-gBucket/
-├── documents/
-│   └── images/
-├── src/
-│   └── index.js
-├── .env
-├── .gitignore
-├── package.json
-└── readme.md
-```
+O projeto utiliza:
+- ESLint para linting
+- Prettier para formatação de código
+- TypeScript para tipagem estática
 
-## Dependências
-- body-parser: ^1.20.3
-- dotenv: ^16.4.7
-- express: ^4.21.2
-- multer: ^1.4.5-lts.1
-- nodemon: ^3.1.9
+### Configurações
 
-## Licença
-Este projeto está licenciado sob a licença ISC.
+- `.eslintrc.cjs`: Configurações do ESLint
+- `.prettierrc`: Configurações do Prettier
+- `tsconfig.json`: Configurações do TypeScript
+
+## 📦 Dependências Principais
+
+- `express`: Framework web
+- `multer`: Middleware para upload de arquivos
+- `express-jwt`: Middleware de autenticação JWT
+- `dotenv`: Gerenciamento de variáveis de ambiente
+- `sharp`: Processamento de imagens
+
+## 🔐 Segurança
+
+- Autenticação via JWT
+- Validação de tipos com TypeScript
+- Sanitização de inputs
+- Proteção contra upload de arquivos maliciosos
+
+## 📄 Licença
+
+Este projeto está sob a licença ISC.
