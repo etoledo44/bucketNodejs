@@ -16,13 +16,7 @@ interface UploadRequest extends Request {
 // Rota para upload de arquivos
 async function uploadFile(req: UploadRequest, res: Response): Promise<void> {
   console.time('/ post');
-
-  console.log('+++ UploadDIr', UPLOAD_DIR);
-  console.log('+++ TMP_DIR', TMP_DIR);
-
   const { cnpj } = JSON.parse(req.body.data);
-  console.log('cnpj', cnpj);
-
   const files = req.files;
 
   if (!files) {

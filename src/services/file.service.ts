@@ -4,43 +4,37 @@ import sharp from 'sharp';
 import { UPLOAD_DIR, TMP_DIR } from '../config';
 import { ensureDir } from '../utils/file.utils';
 import { randomUUID } from 'crypto';
+import { sanitizeString } from '../utils/string.utils';
 
 async function processFile(cnpj: string, files: Express.Multer.File[]) {
-  console.log('+++ processFile', cnpj);
-
   const destDir = path.join(UPLOAD_DIR, cnpj);
   await ensureDir(destDir);
 
   const results = [];
 
   for (const file of files) {
-    console.log('+++ file', file.originalname);
     const ext = path.extname(file.originalname).toLowerCase();
-    const baseName = path.basename(`${randomUUID()}`, ext);
+    const originalName = sanitizeString(path.basename(file.originalname, ext));
+    const baseName = path.basename(`${randomUUID()}-${originalName}`, ext);
     let finalName;
 
     try {
       if (['.png', '.jpg', '.jpeg'].includes(ext)) {
-        console.log('+++ convert to webp');
         finalName = `${baseName}.webp`;
         await sharp(file.path)
           .webp({ quality: 30, lossless: false })
           .toFile(path.join(destDir, finalName));
+
+        results.push({ newName: `${finalName}` });
       } else {
         finalName = `${baseName}${ext}`;
         await rename(file.path, path.join(destDir, finalName));
+        results.push({ newName: `${finalName}` });
       }
-
-      // urlPath = `/files/${cnpj}/${finalName}`;
-      results.push({ original: file.originalname });
     } finally {
-      // Garante que o tmp será limpo mesmo que ocorra erro
-      console.log('+++ unlink', file.path);
-      // await unlink(file.path);
+      await unlink(file.path);
     }
   }
-
-  // deleteFile(files);
   return results;
 }
 
