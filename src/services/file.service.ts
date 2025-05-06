@@ -1,12 +1,12 @@
-const path = require("path");
-const { unlink, rename } = require("fs").promises;
-const sharp = require("sharp");
-const { UPLOAD_DIR, TMP_DIR } = require("../config");
-const { ensureDir } = require("../utils/file.utils");
-const { randomUUID } = require("crypto");
+import path from 'path';
+import { unlink, rename } from 'fs/promises';
+import sharp from 'sharp';
+import { UPLOAD_DIR, TMP_DIR } from '../config';
+import { ensureDir } from '../utils/file.utils';
+import { randomUUID } from 'crypto';
 
-async function processFile(cnpj, files) {
-  console.log("+++ processFile", cnpj);
+async function processFile(cnpj: string, files: Express.Multer.File[]) {
+  console.log('+++ processFile', cnpj);
 
   const destDir = path.join(UPLOAD_DIR, cnpj);
   await ensureDir(destDir);
@@ -14,14 +14,14 @@ async function processFile(cnpj, files) {
   const results = [];
 
   for (const file of files) {
-    console.log("+++ file", file.originalname);
+    console.log('+++ file', file.originalname);
     const ext = path.extname(file.originalname).toLowerCase();
     const baseName = path.basename(`${randomUUID()}-${file.originalname}`, ext);
     let finalName;
 
     try {
-      if ([".png", ".jpg", ".jpeg"].includes(ext)) {
-        console.log("+++ convert to webp");
+      if (['.png', '.jpg', '.jpeg'].includes(ext)) {
+        console.log('+++ convert to webp');
         finalName = `${baseName}.webp`;
         await sharp(file.path)
           .webp({ quality: 30, lossless: false })
@@ -35,7 +35,7 @@ async function processFile(cnpj, files) {
       results.push({ original: file.originalname });
     } finally {
       // Garante que o tmp será limpo mesmo que ocorra erro
-      console.log("+++ unlink", file.path);
+      console.log('+++ unlink', file.path);
       await unlink(file.path);
     }
   }
@@ -59,6 +59,4 @@ async function processFile(cnpj, files) {
 //   }
 // }
 
-module.exports = {
-  processFile,
-};
+export { processFile };
