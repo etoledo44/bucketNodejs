@@ -1,4 +1,4 @@
-const fs = require('fs/promises')
+const fs = require('fs/promises');
 
 async function ensureDir(path) {
   try {
@@ -8,6 +8,4 @@ async function ensureDir(path) {
   }
 }
 
-module.exports = {
-  ensureDir
-};
+export { ensureDir };
