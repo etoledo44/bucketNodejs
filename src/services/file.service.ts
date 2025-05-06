@@ -16,7 +16,7 @@ async function processFile(cnpj: string, files: Express.Multer.File[]) {
   for (const file of files) {
     console.log('+++ file', file.originalname);
     const ext = path.extname(file.originalname).toLowerCase();
-    const baseName = path.basename(`${randomUUID()}-${file.originalname}`, ext);
+    const baseName = path.basename(`${randomUUID()}`, ext);
     let finalName;
 
     try {
@@ -27,7 +27,7 @@ async function processFile(cnpj: string, files: Express.Multer.File[]) {
           .webp({ quality: 30, lossless: false })
           .toFile(path.join(destDir, finalName));
       } else {
-        finalName = file.filename;
+        finalName = `${baseName}${ext}`;
         await rename(file.path, path.join(destDir, finalName));
       }
 
@@ -36,7 +36,7 @@ async function processFile(cnpj: string, files: Express.Multer.File[]) {
     } finally {
       // Garante que o tmp será limpo mesmo que ocorra erro
       console.log('+++ unlink', file.path);
-      await unlink(file.path);
+      // await unlink(file.path);
     }
   }
 

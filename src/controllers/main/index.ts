@@ -14,7 +14,7 @@ interface UploadRequest extends Request {
 }
 
 // Rota para upload de arquivos
-async function uploadFile(req: UploadRequest, res: Response) {
+async function uploadFile(req: UploadRequest, res: Response): Promise<void> {
   console.time('/ post');
 
   console.log('+++ UploadDIr', UPLOAD_DIR);
@@ -27,7 +27,8 @@ async function uploadFile(req: UploadRequest, res: Response) {
 
   if (!files) {
     console.timeEnd('/ post');
-    return res.status(500).json({ error: 'Não possui arquivo anexado!' });
+    res.status(500).json({ error: 'Não possui arquivo anexado!' });
+    return;
   }
 
   try {
@@ -36,53 +37,61 @@ async function uploadFile(req: UploadRequest, res: Response) {
     res.json(results);
   } catch (error: any) {
     console.timeEnd('/ post');
-    return res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
-
-  // console.timeEnd("/ post");
-  // return res.status(200).json({ filesArr });
 }
 
 // Rota para listar arquivos disponíveis
-async function getFiles(req: Request, res: Response) {
+async function getFiles(req: Request, res: Response): Promise<void> {
   console.time('/ get');
+  console.log('req', req.query);
+  const cnpj = req.query.cnpj as string;
+  let pathString: string[] = [CONSTANTS.uploadDir];
   try {
-    const file = fs.readdirSync(CONSTANTS.uploadDir, { recursive: true });
+    if (cnpj) {
+      pathString.push(cnpj);
+      console.log('pathString', pathString);
+    }
+    console.log('pathString', pathString);
+    const file = fs.readdirSync(path.join(...pathString), { recursive: true });
     if (!file) {
       console.timeEnd('/ get');
-      return res.status(404).send('Arquivo não encontrado!');
+      res.status(404).send('Arquivo não encontrado!');
+      return;
     }
     console.timeEnd('/ get');
-    return res.status(200).json(file);
-  } catch (error) {
+    res.status(200).json(file);
+  } catch (error: any) {
     console.timeEnd('/ get');
-    return res.status(500).json({ error: true });
+    res.status(500).json({ error: error.message });
   }
 }
 
 // Rota para download de arquivos
-async function downloadFile(req: Request, res: Response) {
+async function downloadFile(req: Request, res: Response): Promise<void> {
+  console.log('entrou na rota download');
   console.time('/download');
 
   try {
     const fileName = req.params.file;
-    const filePath = path.join(CONSTANTS.uploadDir, req.params.file);
+    const cnpj = req.params.cnpj;
+    const filePath = path.join(CONSTANTS.uploadDir, cnpj, fileName);
+    console.log('filePath', filePath);
 
-    await checkAcessFiles(req.params.file);
+    // await checkAcessFiles(req.params.file);
 
     res.download(filePath, fileName, err => {
       if (err) {
         console.timeEnd('/download');
         console.error(err);
         if (!res.headersSent) {
-          console.timeEnd('/download');
-          return res.status(500).send('Erro ao realizar o download do arquivo.');
+          res.status(500).send('Erro ao realizar o download do arquivo.');
         }
       }
     });
   } catch (error: any) {
     console.timeEnd('/download');
-    return res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 }
 

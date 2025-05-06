@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 const mainProcess = Router();
 import upload from '../../middlewares/upload.middleware';
 
-const { uploadFile, getFiles, downloadFile } = require('../../controllers/main');
+import { uploadFile, getFiles, downloadFile } from '../../controllers/main';
 
-mainProcess.post('/', upload.array('document', 10), uploadFile);
-mainProcess.get('/', getFiles);
-mainProcess.get('/download/:file', downloadFile);
+mainProcess.post('/', upload.array('document', 10), uploadFile as RequestHandler);
+mainProcess.get('/', getFiles as RequestHandler);
+mainProcess.get('/download/cnpj/:cnpj/file/:file', downloadFile as RequestHandler);
 
 export default mainProcess;
