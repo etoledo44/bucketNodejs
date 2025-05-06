@@ -1,7 +1,7 @@
-const multer = require("multer");
-const path = require("path");
-const { TMP_DIR } = require("../config");
-const { ensureDir } = require("../utils/file.utils");
+import multer from 'multer';
+import path from 'path';
+import { TMP_DIR } from '../config/index';
+import { ensureDir } from '../utils/file.utils';
 
 // Configuração do armazenamento do multer
 const storage = multer.diskStorage({
@@ -14,11 +14,11 @@ const storage = multer.diskStorage({
     cb(
       null,
       path.basename(file.originalname, path.extname(file.originalname)) +
-        path.extname(file.originalname)
+        path.extname(file.originalname),
     );
   },
 });
 
 const upload = multer({ storage });
 
-module.exports = upload;
+export default upload;
