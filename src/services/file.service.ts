@@ -5,9 +5,19 @@ import { UPLOAD_DIR, TMP_DIR } from '../config';
 import { ensureDir } from '../utils/file.utils';
 import { randomUUID } from 'crypto';
 import { sanitizeString } from '../utils/string.utils';
+import checarDiretorio from '../utils/checarDiretorio';
 
-async function processFile(cnpj: string, files: Express.Multer.File[]) {
-  const destDir = path.join(UPLOAD_DIR, cnpj);
+async function processFile(cnpj: string, sistema: string, files: Express.Multer.File[]) {
+  let pathDir: string[] = [UPLOAD_DIR];
+
+  if (cnpj) {
+    pathDir.push(cnpj);
+  }
+  if (sistema) {
+    pathDir.push(sistema);
+  }
+
+  const destDir = path.join(...pathDir);
   await ensureDir(destDir);
 
   const results = [];
@@ -38,6 +48,11 @@ async function processFile(cnpj: string, files: Express.Multer.File[]) {
   return results;
 }
 
+async function _downloadFile(path: string, fileName: string) {
+  const result = await checarDiretorio(path, fileName);
+
+  return result;
+}
 // function deleteFile(files) {
 //   console.log("+++ deleteFile", files[0].originalname);
 //   const destDir = TMP_DIR;
@@ -53,4 +68,4 @@ async function processFile(cnpj: string, files: Express.Multer.File[]) {
 //   }
 // }
 
-export { processFile };
+export { processFile, _downloadFile };

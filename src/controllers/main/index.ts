@@ -4,7 +4,8 @@ import CONSTANTS from '../../config/constants';
 import fs from 'fs';
 import path from 'path';
 import { UPLOAD_DIR, TMP_DIR } from '../../config';
-import { processFile } from '../../services/file.service';
+import { _downloadFile, processFile } from '../../services/file.service';
+import { buildFilePath } from '../../utils/path.utils';
 
 interface UploadRequest extends Request {
   body: {
@@ -16,7 +17,7 @@ interface UploadRequest extends Request {
 // Rota para upload de arquivos
 async function uploadFile(req: UploadRequest, res: Response): Promise<void> {
   console.time('/ post');
-  const { cnpj } = JSON.parse(req.body.data);
+  const { cnpj, sistema } = JSON.parse(req.body.data);
   const files = req.files;
 
   if (!files) {
@@ -26,7 +27,7 @@ async function uploadFile(req: UploadRequest, res: Response): Promise<void> {
   }
 
   try {
-    const results = await processFile(cnpj, files);
+    const results = await processFile(cnpj, sistema, files);
     console.timeEnd('/ post');
     res.json(results);
   } catch (error: any) {
@@ -38,15 +39,15 @@ async function uploadFile(req: UploadRequest, res: Response): Promise<void> {
 // Rota para listar arquivos disponíveis
 async function getFiles(req: Request, res: Response): Promise<void> {
   console.time('/ get');
-  console.log('req', req.query);
-  const cnpj = req.query.cnpj as string;
+  const { cnpj, sistema } = req.query as { cnpj: string; sistema: string };
   let pathString: string[] = [CONSTANTS.uploadDir];
   try {
     if (cnpj) {
       pathString.push(cnpj);
-      console.log('pathString', pathString);
     }
-    console.log('pathString', pathString);
+    if (sistema) {
+      pathString.push(sistema);
+    }
     const file = fs.readdirSync(path.join(...pathString), { recursive: true });
     if (!file) {
       console.timeEnd('/ get');
@@ -57,27 +58,30 @@ async function getFiles(req: Request, res: Response): Promise<void> {
     res.status(200).json(file);
   } catch (error: any) {
     console.timeEnd('/ get');
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Diretorio não encontrado!', details: error.message });
   }
 }
 
 // Rota para download de arquivos
 async function downloadFile(req: Request, res: Response): Promise<void> {
-  console.log('entrou na rota download');
-  console.time('/download');
-
   try {
     const fileName = req.params.file;
     const cnpj = req.params.cnpj;
-    const filePath = path.join(CONSTANTS.uploadDir, cnpj, fileName);
-    console.log('filePath', filePath);
+    const sistema = req.params.sistema;
 
-    // await checkAcessFiles(req.params.file);
+    const caminhoFile = buildFilePath({ cnpj, sistema, fileName });
+    const caminho = buildFilePath({ cnpj, sistema });
 
-    res.download(filePath, fileName, err => {
+    const result = await _downloadFile(caminho, fileName);
+    if (result.erro) {
+      res.status(500).json({ error: result.mensagem });
+      return;
+    }
+
+    res.download(caminhoFile, fileName, err => {
       if (err) {
         console.timeEnd('/download');
-        console.error(err);
+        console.error(err.stack);
         if (!res.headersSent) {
           res.status(500).send('Erro ao realizar o download do arquivo.');
         }
